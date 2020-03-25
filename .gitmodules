@@ -1,0 +1,3 @@
+[submodule "thirdparty/GlacierFormats"]
+	path = thirdparty/GlacierFormats
+	url = https://github.com/pawREP/GlacierFormats.git
