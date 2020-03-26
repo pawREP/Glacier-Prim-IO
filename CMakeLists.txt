@@ -38,6 +38,6 @@ add_executable(
 
 add_subdirectory(thirdparty/GlacierFormats)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE thirdparty/GlacierFormats)
+target_link_libraries(${PROJECT_NAME} PUBLIC GlacierFormats)
 
 target_link_libraries(GlacierPrimIO PRIVATE Qt5::Widgets)
