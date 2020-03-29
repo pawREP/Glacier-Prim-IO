@@ -2,14 +2,8 @@
 #include "GlacierFormats.h"
 
 #include <iostream>
-
 #include <QApplication>
 #include <QtConcurrent/qtconcurrentrun.h>
-#include <QTextStream>
-#include <QFile>
-#include <QtWidgets>
-#include <Windows.h>
-#include <WinUser.h>
 
 void initAppStyle() {
     qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -45,14 +39,13 @@ void initAppStyle() {
 
     qApp->setPalette(darkPalette);
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
-
 }
 
 void initGlacierFormats() {
     QProgressDialog progressDialog;
     progressDialog.setWindowTitle("Loading...");
     progressDialog.setRange(0, 0);
-    progressDialog.setLabel(new QLabel("Initilizing GlacierFormats, this might take a few seconds."));
+    progressDialog.setLabel(new QLabel("Initilizing GlacierFormats, this might take a few seconds..."));
     progressDialog.show();
 
     auto future = QtConcurrent::run(&GlacierFormats::GlacierInit);
@@ -66,12 +59,15 @@ void initGlacierFormats() {
     progressDialog.close();
 }
 
-int main(int argc, char *argv[])
-{
-    //ShowWindow(GetConsoleWindow(), SW_HIDE);
+int main(int argc, char *argv[]) {
+
+#ifndef _DEBUG
+    ShowWindow(GetConsoleWindow(), SW_HIDE);
+#endif
     QApplication app(argc, argv);
 
     initAppStyle();
+
     initGlacierFormats();
 
     MainWindow window;

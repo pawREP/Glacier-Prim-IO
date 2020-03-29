@@ -19,10 +19,14 @@ set(SOURCES
    src/main.cpp
    src/mainwindow.cpp
    src/mainwindow.h
-   src/import.h
-   src/import.cpp
-   src/export.h
-   src/export.cpp
+   src/pathBrowser.h
+   src/pathBrowser.cpp
+   src/Console.h
+   src/Console.cpp
+   src/primExport.h
+   src/primExport.cpp
+   src/primImport.h
+   src/primImport.cpp
    src/mainwindow.ui
 )
 
