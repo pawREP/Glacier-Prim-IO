@@ -45,7 +45,7 @@ void initGlacierFormats() {
     QProgressDialog progressDialog;
     progressDialog.setWindowTitle("Loading...");
     progressDialog.setRange(0, 0);
-    progressDialog.setLabel(new QLabel("Initilizing GlacierFormats, this might take a few seconds..."));
+    progressDialog.setLabel(new QLabel("Initilizing GlacierFormats, this might take a few seconds...", &progressDialog));
     progressDialog.show();
 
     auto future = QtConcurrent::run(&GlacierFormats::GlacierInit);
