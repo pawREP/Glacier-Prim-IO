@@ -324,7 +324,8 @@ void GltfImportWidget::doImport() {
     }
 
     //Deletion list
-    for (const auto& id : deletionList->deletionList())
+    auto deleted_resource_ids = deletionList->deletionList();
+    for (const auto& id : deleted_resource_ids)
         rpkg.deletion_list.push_back(id);
 
     printStatus("Writing patch file...");
