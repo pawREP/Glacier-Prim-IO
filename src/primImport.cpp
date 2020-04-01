@@ -40,12 +40,11 @@ std::vector<uint64_t> DeletionList::deletionList() const {
 
     std::regex runtimeIdRegex("[0-9a-fA-F]{16}");
 
-    std::smatch matches;
-    if (std::regex_match(idList, matches, runtimeIdRegex)) {
-        for (int i = 1; i < matches.size(); ++i) {
-            auto idString = std::string(matches[i].str());
-            idList.push_back(std::stoll(idString, nullptr, 16));
-        }
+    std::smatch match;
+    while(std::regex_search(idList, match, runtimeIdRegex)) {
+            auto idString = std::string(match.str());
+            ids.push_back(std::stoll(idString, nullptr, 16));
+            idList = match.suffix();
     }
 
     return ids;
