@@ -136,6 +136,29 @@ GltfImportWidget::GltfImportWidget(QWidget* parent) : QGroupBox("PRIM Import", p
     importerLayout->addWidget(pbImport);
 }
 
+//Takes archive name and returns the next available patch archive file path of the same archive category.
+std::filesystem::path getNextAvailablePatchFileName(const std::string& sourceArchiveName) {
+    auto runtimeDirectory = ResourceRepository::instance()->runtime_dir;
+    
+    std::regex re("(dlc[0-9]{1,2}|chunk[0-9]{1,2})");
+    std::smatch match;
+    std::regex_search(sourceArchiveName, match, re);
+
+    if(match.size() != 2)
+        throw std::runtime_error("Invalid archive name");
+
+    std::string base = match.str(1);
+    std::string patchName = base + "patch1.rpkg";
+    
+    int patchId = 1;
+    while (std::filesystem::exists(runtimeDirectory / patchName)) {
+        patchName = base + "patch" + std::to_string(patchId) + ".rpkg";
+        ++patchId;
+    }
+    
+    return runtimeDirectory / patchName;
+}
+
 void GltfImportWidget::gltfPathUpdated() {
     auto gltfPath = gltfBrowser->path();
     //Generate appropriate patch file name; 
@@ -147,9 +170,7 @@ void GltfImportWidget::gltfPathUpdated() {
         return;
     }
 
-    auto patchPath = repo->runtime_dir.generic_string();
-    auto sourceArchiveName = repo->getSourceStreamName(id);
-    patchPath += "/" + Util::incrementArchiveName(sourceArchiveName) + ".rpkg";
+    auto patchPath = getNextAvailablePatchFileName(repo->getSourceStreamName(id)).generic_string();
 
     patchFileBrowser->setPath(QString(patchPath.c_str()));
 }
