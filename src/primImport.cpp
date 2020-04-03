@@ -66,16 +66,21 @@ GltfImportOptions::GltfImportOptions(QWidget* parent) : QGroupBox("Options", par
     cbUseMaxLODRange->setToolTip("Sets the LOD range of all mesh in the gltf to the max range");
     layout->addWidget(cbUseMaxLODRange, 1, 0);
 
+    cbUseMaxLODRange = new QCheckBox(this);
+    cbUseMaxLODRange->setText("Perserve bone info and indices");
+    cbUseMaxLODRange->setToolTip("Imports the model with the original BoneInfo and BoneIndices structures.\nThis option fixes potential bullet hit detection issues and should therefor be enabled when importing character models.");
+    layout->addWidget(cbUseMaxLODRange, 2, 0);
+
     cbUseCustomMaterialId = new QCheckBox(this);
     cbUseCustomMaterialId->setText("Override material Ids");
     cbUseCustomMaterialId->setToolTip("Sets the material id of all meshes to the given id");
     connect(cbUseCustomMaterialId, SIGNAL(stateChanged(int)), SLOT(materialIdOverrideChecked(int)));
-    layout->addWidget(cbUseCustomMaterialId, 2, 0);
+    layout->addWidget(cbUseCustomMaterialId, 3, 0);
 
     sbMaterialId = new QSpinBox(this);
     sbMaterialId->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     sbMaterialId->setEnabled(false);
-    layout->addWidget(sbMaterialId, 2, 1);
+    layout->addWidget(sbMaterialId, 3, 1);
 }
 
 void GltfImportOptions::materialIdOverrideChecked(int state) {
@@ -101,6 +106,11 @@ bool GltfImportOptions::useMaxLODRange() {
 
 bool GltfImportOptions::useCustomMaterialId() {
     return cbUseCustomMaterialId->checkState() == Qt::Checked;
+}
+
+bool GltfImportOptions::useOriginalBoneInfo()
+{
+    return cbUseOriginalBoneInfo->checkState();
 }
 
 int GltfImportOptions::materialId() {
@@ -291,8 +301,11 @@ void GltfImportWidget::doImport() {
     }
 
     printStatus("Building new PRIM from GLTFAsset...");
+
+
+    auto boneInfoTransferEnabled = options->useOriginalBoneInfo();
     std::function<void(ZRenderPrimitiveBuilder&, const std::string&)> build_modifier =
-        [repo, prim_id, &originalPrim](GlacierFormats::ZRenderPrimitiveBuilder& builder, const std::string& submesh_name) -> void {
+        [repo, prim_id, &originalPrim, boneInfoTransferEnabled](GlacierFormats::ZRenderPrimitiveBuilder& builder, const std::string& submesh_name) -> void {
         for (auto& primitive : originalPrim->primitives) {
             auto primitive_name = primitive->name();
             if (primitive_name == submesh_name) {
@@ -301,6 +314,10 @@ void GltfImportWidget::doImport() {
                 builder.setPropertyFlags(primitive->remnant.submesh_properties);
                 builder.setColor1(primitive->remnant.submesh_color1);
                 builder.setMeshSubtype(primitive->remnant.mesh_subtype);
+                if (boneInfoTransferEnabled) {
+                    builder.setBoneIndices(std::move(primitive->bone_indices));
+                    builder.setBoneInfo(std::move(primitive->bone_info));
+                }
             }
         }
     };

@@ -34,12 +34,14 @@ public:
     bool importTextures();
     bool useMaxLODRange();
     bool useCustomMaterialId();
+    bool useOriginalBoneInfo();
     int materialId();
 
 private:
     QCheckBox* cbImportTextures;
     QCheckBox* cbUseMaxLODRange;
     QCheckBox* cbUseCustomMaterialId;
+    QCheckBox* cbUseOriginalBoneInfo;
     QSpinBox* sbMaterialId;
 
 private slots:
