@@ -26,21 +26,26 @@ void PathBrowserWidget::setPath(const QString& path) {
 }
 
 void PathBrowserWidget::browse() {
-    QString path;
+    QString oldPath = path();
+    oldPath = oldPath.isEmpty() ? QDir::currentPath() : oldPath;
+
+    QString newPath;
     switch (type) {
     case PathBrowserType::SAVE_FILE:
-        path = QFileDialog::getSaveFileName(this, "Browse Save File", QDir::currentPath(), filter);
+        newPath = QFileDialog::getSaveFileName(this, "Browse Save File", oldPath, filter);
         break;
     case PathBrowserType::OPEN_FILE:
-        path = QFileDialog::getOpenFileName(this, "Browse File", QDir::currentPath(), filter);
+        newPath = QFileDialog::getOpenFileName(this, "Browse File", oldPath, filter);
         break;
     case PathBrowserType::OPEN_DIRECTORY:
-        path = QFileDialog::getExistingDirectory(this, "Browse Directory", QDir::currentPath());
+        newPath = QFileDialog::getExistingDirectory(this, "Browse Directory", oldPath);
         break;
     default:
         throw;
     }
-    pathLine->setText(path);
+
+    if(!newPath.isEmpty())
+        pathLine->setText(newPath);
     emit pathChanged();
 }
 
