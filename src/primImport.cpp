@@ -73,24 +73,24 @@ GltfImportOptions::GltfImportOptions(QWidget* parent) : QGroupBox("Options", par
 
     cbInvertNormalX = new QCheckBox(this);
     cbInvertNormalX->setText("Invert Normals X");
-    layout->addWidget(cbInvertNormalX, 3, 0);
+    layout->addWidget(cbInvertNormalX, 0, 1);
     cbInvertNormalY = new QCheckBox(this);
     cbInvertNormalY->setText("Invert Normals Y");
-    layout->addWidget(cbInvertNormalY, 3, 1);
+    layout->addWidget(cbInvertNormalY, 1, 1);
     cbInvertNormalZ = new QCheckBox(this);
     cbInvertNormalZ->setText("Invert Normals Z");
-    layout->addWidget(cbInvertNormalZ, 3, 2);
+    layout->addWidget(cbInvertNormalZ, 2, 1);
 
     cbUseCustomMaterialId = new QCheckBox(this);
     cbUseCustomMaterialId->setText("Override material Ids");
     cbUseCustomMaterialId->setToolTip("Sets the material id of all meshes to the given id");
     connect(cbUseCustomMaterialId, SIGNAL(stateChanged(int)), SLOT(materialIdOverrideChecked(int)));
-    layout->addWidget(cbUseCustomMaterialId, 4, 0);
+    layout->addWidget(cbUseCustomMaterialId, 3, 0);
 
     sbMaterialId = new QSpinBox(this);
     sbMaterialId->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     sbMaterialId->setEnabled(false);
-    layout->addWidget(sbMaterialId, 4, 1);
+    layout->addWidget(sbMaterialId, 3, 1);
 }
 
 void GltfImportOptions::materialIdOverrideChecked(int state) {
