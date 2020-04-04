@@ -66,21 +66,31 @@ GltfImportOptions::GltfImportOptions(QWidget* parent) : QGroupBox("Options", par
     cbUseMaxLODRange->setToolTip("Sets the LOD range of all mesh in the gltf to the max range");
     layout->addWidget(cbUseMaxLODRange, 1, 0);
 
-    cbUseMaxLODRange = new QCheckBox(this);
-    cbUseMaxLODRange->setText("Perserve bone info and indices");
-    cbUseMaxLODRange->setToolTip("Imports the model with the original BoneInfo and BoneIndices structures.\nThis option fixes potential bullet hit detection issues and should therefor be enabled when importing character models.");
-    layout->addWidget(cbUseMaxLODRange, 2, 0);
+    cbUseOriginalBoneInfo = new QCheckBox(this);
+    cbUseOriginalBoneInfo->setText("Perserve bone info and indices");
+    cbUseOriginalBoneInfo->setToolTip("Imports the model with the original BoneInfo and BoneIndices structures.\nThis option fixes potential bullet hit detection issues and should therefor be enabled when importing character models.");
+    layout->addWidget(cbUseOriginalBoneInfo, 2, 0);
+
+    cbInvertNormalX = new QCheckBox(this);
+    cbInvertNormalX->setText("Invert Normals X");
+    layout->addWidget(cbInvertNormalX, 3, 0);
+    cbInvertNormalY = new QCheckBox(this);
+    cbInvertNormalY->setText("Invert Normals Y");
+    layout->addWidget(cbInvertNormalY, 3, 1);
+    cbInvertNormalZ = new QCheckBox(this);
+    cbInvertNormalZ->setText("Invert Normals Z");
+    layout->addWidget(cbInvertNormalZ, 3, 2);
 
     cbUseCustomMaterialId = new QCheckBox(this);
     cbUseCustomMaterialId->setText("Override material Ids");
     cbUseCustomMaterialId->setToolTip("Sets the material id of all meshes to the given id");
     connect(cbUseCustomMaterialId, SIGNAL(stateChanged(int)), SLOT(materialIdOverrideChecked(int)));
-    layout->addWidget(cbUseCustomMaterialId, 3, 0);
+    layout->addWidget(cbUseCustomMaterialId, 4, 0);
 
     sbMaterialId = new QSpinBox(this);
     sbMaterialId->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     sbMaterialId->setEnabled(false);
-    layout->addWidget(sbMaterialId, 3, 1);
+    layout->addWidget(sbMaterialId, 4, 1);
 }
 
 void GltfImportOptions::materialIdOverrideChecked(int state) {
@@ -110,7 +120,22 @@ bool GltfImportOptions::useCustomMaterialId() {
 
 bool GltfImportOptions::useOriginalBoneInfo()
 {
-    return cbUseOriginalBoneInfo->checkState();
+    return cbUseOriginalBoneInfo->checkState() == Qt::Checked;
+}
+
+bool GltfImportOptions::doInvertNormalsX()
+{
+    return cbInvertNormalX->checkState() == Qt::Checked;
+}
+
+bool GltfImportOptions::doInvertNormalsY()
+{
+    return cbInvertNormalY->checkState() == Qt::Checked;
+}
+
+bool GltfImportOptions::doInvertNormalsZ()
+{
+    return cbInvertNormalZ->checkState() == Qt::Checked;
 }
 
 int GltfImportOptions::materialId() {
@@ -343,6 +368,21 @@ void GltfImportWidget::doImport() {
             primitive->remnant.lod_mask = 0xFF;
         if (options->useCustomMaterialId())
             primitive->remnant.material_id = options->materialId();
+
+        auto normals = primitive->getNormals();
+        if (options->doInvertNormalsX()) {
+            for (int i = 0; i < normals.size(); i += 3)
+                normals[i] = -normals[i];
+        }
+        if (options->doInvertNormalsY()) {
+            for (int i = 1; i < normals.size(); i += 3)
+                normals[i] = -normals[i];
+        }
+        if (options->doInvertNormalsZ()) {
+            for (int i = 2; i < normals.size(); i += 3)
+                normals[i] = -normals[i];
+        }
+        primitive->setNormals(normals);
     }
 
     printStatus("Serializing PRIM to patch file...");

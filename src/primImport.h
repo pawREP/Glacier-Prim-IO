@@ -35,6 +35,9 @@ public:
     bool useMaxLODRange();
     bool useCustomMaterialId();
     bool useOriginalBoneInfo();
+    bool doInvertNormalsX();
+    bool doInvertNormalsY();
+    bool doInvertNormalsZ();
     int materialId();
 
 private:
@@ -42,6 +45,11 @@ private:
     QCheckBox* cbUseMaxLODRange;
     QCheckBox* cbUseCustomMaterialId;
     QCheckBox* cbUseOriginalBoneInfo;
+
+    QCheckBox* cbInvertNormalX;
+    QCheckBox* cbInvertNormalY;
+    QCheckBox* cbInvertNormalZ;
+
     QSpinBox* sbMaterialId;
 
 private slots:
