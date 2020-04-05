@@ -369,17 +369,6 @@ void GltfImportWidget::doImport() {
         if (options->useCustomMaterialId())
             primitive->remnant.material_id = options->materialId();
 
-        //DEbug
-        //auto verts = primitive->getVertexBuffer();
-        //auto normals = primitive->getNormals();
-
-        //for (const auto& v : verts)
-        //    printf("%f, ", v);
-
-        //printf("\n\n");
-        //for (const auto& v : normals)
-        //    printf("%f, ", v);
-
         auto invX = options->doInvertNormalsX();
         auto invY = options->doInvertNormalsY();
         auto invZ = options->doInvertNormalsZ();
@@ -401,7 +390,6 @@ void GltfImportWidget::doImport() {
             normals[i + 1] = -z;
             normals[i + 2] = y;
         }
-
         primitive->setNormals(normals);
     }
 
