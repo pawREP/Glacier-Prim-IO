@@ -17,7 +17,7 @@ A few tips and pointers about importing meshes:
  - The material in the glTF doesn't get imported, the importer will only reimport the tga textures that where generated during export. You can change the textures of cource but make sure the changed textures have the same dimensions as the original.
  
 ### Textures:
-Meshes will most commonly use three texture maps, albedo, normal and a metallic/roughness map. The first two should be self-explanatory, the metallic/roughness map contains the metallicity in the color channel (more white = less rough) and the roughnes in the alpha channel (more white = more metallic).
+Meshes will most commonly use three texture maps, albedo, normal and a metallic/roughness map. The first two should be self-explanatory, the metallic/roughness map contains the metallicity in the color channel (more white = less rough) and the roughness in the alpha channel (more white = more metallic).
 More complicated models may contain a number of additional textures. 
 
 # Troubleshooting:
