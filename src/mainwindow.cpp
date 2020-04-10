@@ -22,10 +22,18 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
     layout->addWidget(runtimeDirectory, 0, 0, 1, 3);
 
     exportWidget = new PrimExportWidget(this);
-    layout->addWidget(exportWidget, 1, 0, 1, 1);
+    //layout->addWidget(exportWidget, 1, 0, 1, 1);
 
     importWidget = new GltfImportWidget(this);
-    layout->addWidget(importWidget, 1, 2, 1, 1);
+    //layout->addWidget(importWidget, 1, 2, 1, 1);
+
+    auto tabs = new QTabWidget(this);
+    layout->addWidget(tabs, 1, 0, 1, 3);
+
+    tabs->addTab(exportWidget, "Prim Export" );
+    tabs->addTab(importWidget, "Prim Import" );
+    tabs->addTab(new QWidget(this), "Texture Tool" );
+    tabs->addTab(new QWidget(this), "Patch Tool" );
 
     console = new ConsoleWidget(this);
     Console::instance().setDestinationWidget(console);

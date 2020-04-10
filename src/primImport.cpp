@@ -143,7 +143,7 @@ int GltfImportOptions::materialId() {
 }
 
 
-GltfImportWidget::GltfImportWidget(QWidget* parent) : QGroupBox("PRIM Import", parent) {
+GltfImportWidget::GltfImportWidget(QWidget* parent) : QWidget(parent) {
     QGridLayout* importerLayout = new QGridLayout(this);
 
     //First line
@@ -297,6 +297,7 @@ void GltfImportWidget::doImport() {
         auto bone_mapping = borg->getNameToBoneIndexMap();
         try {
             asset = std::make_unique<GLTFAsset>(gltfFilePath, &bone_mapping);
+            GLACIER_ASSERT_TRUE(asset);
         }
         catch (const std::exception& e) {
             printError(e.what());
@@ -343,6 +344,7 @@ void GltfImportWidget::doImport() {
                     builder.setBoneIndices(std::move(primitive->bone_indices));
                     builder.setBoneInfo(std::move(primitive->bone_info));
                 }
+                builder.setCollisionBuffer(std::move(primitive->collision_data));
             }
         }
     };

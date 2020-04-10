@@ -47,7 +47,6 @@ void PrimExportWidget::updateResourceDependencyTree(const QString& text) {
 };
 
 void PrimExportWidget::doExport() {
-    auto console = Console::instance();
 
     RuntimeId id = cbPrimIds->currentText().toStdString();
     if (id == 0) {
@@ -95,7 +94,7 @@ void PrimExportWidget::exportModel() {
     emit exportFinished();
 }
 
-PrimExportWidget::PrimExportWidget(QWidget* parent) : QGroupBox("PRIM Export", parent) {
+PrimExportWidget::PrimExportWidget(QWidget* parent) : QWidget(parent) {
     QGridLayout* exporterLayout = new QGridLayout(this);
 
     QBoxLayout* blExporterLine0 = new QBoxLayout(QBoxLayout::LeftToRight, this);

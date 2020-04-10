@@ -56,7 +56,7 @@ private slots:
     void materialIdOverrideChecked(int);
 };
 
-class GltfImportWidget : public QGroupBox {
+class GltfImportWidget : public QWidget {
     Q_OBJECT
 
 public:

@@ -3,7 +3,7 @@
 
 #include <QtWidgets>
 
-class PrimExportWidget : public QGroupBox {
+class PrimExportWidget : public QWidget {
     Q_OBJECT
 
 public:
