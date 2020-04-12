@@ -38,6 +38,7 @@ public:
     bool doInvertNormalsX();
     bool doInvertNormalsY();
     bool doInvertNormalsZ();
+    bool autoOrientNormals();
     int materialId();
 
 private:
@@ -49,6 +50,7 @@ private:
     QCheckBox* cbInvertNormalX;
     QCheckBox* cbInvertNormalY;
     QCheckBox* cbInvertNormalZ;
+    QCheckBox* cbAutoOrientNormal;
 
     QSpinBox* sbMaterialId;
 

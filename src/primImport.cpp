@@ -67,7 +67,7 @@ GltfImportOptions::GltfImportOptions(QWidget* parent) : QGroupBox("Options", par
     layout->addWidget(cbUseMaxLODRange, 1, 0);
 
     cbUseOriginalBoneInfo = new QCheckBox(this);
-    cbUseOriginalBoneInfo->setText("Perserve bone info and indices");
+    cbUseOriginalBoneInfo->setText("Hit detection fix");
     cbUseOriginalBoneInfo->setToolTip("Imports the model with the original BoneInfo and BoneIndices structures.\nThis option fixes potential bullet hit detection issues and should therefor be enabled when importing character models.");
     layout->addWidget(cbUseOriginalBoneInfo, 2, 0);
 
@@ -80,6 +80,12 @@ GltfImportOptions::GltfImportOptions(QWidget* parent) : QGroupBox("Options", par
     cbInvertNormalZ = new QCheckBox(this);
     cbInvertNormalZ->setText("Invert Normals Z");
     layout->addWidget(cbInvertNormalZ, 2, 1);
+
+    cbAutoOrientNormal = new QCheckBox(this);
+    cbAutoOrientNormal->setText("Auto Orient Normals");
+    cbAutoOrientNormal->setToolTip("The importer will attempt to rotate the given normals into a reference frame that matches the mesh orientation");
+    cbAutoOrientNormal->setChecked(true);
+    layout->addWidget(cbAutoOrientNormal, 0, 2);
 
     cbUseCustomMaterialId = new QCheckBox(this);
     cbUseCustomMaterialId->setText("Override material Ids");
@@ -136,6 +142,10 @@ bool GltfImportOptions::doInvertNormalsY()
 bool GltfImportOptions::doInvertNormalsZ()
 {
     return cbInvertNormalZ->checkState() == Qt::Checked;
+}
+
+bool GltfImportOptions::autoOrientNormals() {
+    return cbAutoOrientNormal->checkState() == Qt::Checked;
 }
 
 int GltfImportOptions::materialId() {
@@ -211,6 +221,7 @@ void GltfImportWidget::gltfPathUpdated() {
 }
 
 void GltfImportWidget::importGltf() {
+    doImport();
     emit importStarted();
     auto future = QtConcurrent::run(this, &GltfImportWidget::doImport);
     while (!future.isFinished()) {
@@ -262,6 +273,112 @@ std::vector<std::unique_ptr<TEXD>> importTextures(uint64_t prim_id, const std::f
     }
     return textures;
 }
+
+std::vector<float> calculateNormals(const std::vector<unsigned short>& index_buffer, const std::vector<float>& vertex_buffer) {
+    auto normals = std::vector<Vec<float, 3>>(vertex_buffer.size() / 3);
+
+    for (int i = 0; i < index_buffer.size(); i = i + 3) {
+        Vec<float, 3> a, b, c;
+
+        std::vector tri_verts{ index_buffer[i + 0], index_buffer[i + 1], index_buffer[i + 2] };
+
+        a.x() = vertex_buffer[3 * tri_verts[0] + 0];
+        a.y() = vertex_buffer[3 * tri_verts[0] + 1];
+        a.z() = vertex_buffer[3 * tri_verts[0] + 2];
+        b.x() = vertex_buffer[3 * tri_verts[1] + 0];
+        b.y() = vertex_buffer[3 * tri_verts[1] + 1];
+        b.z() = vertex_buffer[3 * tri_verts[1] + 2];
+        c.x() = vertex_buffer[3 * tri_verts[2] + 0];
+        c.y() = vertex_buffer[3 * tri_verts[2] + 1];
+        c.z() = vertex_buffer[3 * tri_verts[2] + 2];
+
+        auto v0 = b - a;
+        auto v1 = c - a;
+        auto n = cross(v0, v1);
+
+        normals[tri_verts[0]] += n;
+        normals[tri_verts[1]] += n;
+        normals[tri_verts[2]] += n;
+    }
+
+    for (auto& normal : normals) {
+        normal.normalize();
+    }
+
+    std::vector<float> new_normals(vertex_buffer.size());//TODO: Maybe don't use Vec<> to avoid the copies..
+    memcpy(new_normals.data(), normals.data(), new_normals.size() * sizeof(float));
+
+    return new_normals;
+}
+
+template<>
+struct std::hash<std::array<char, 3>> {
+    std::size_t operator()(const std::array<char, 3>& a) const noexcept {
+        int h = a[2] << 16 | a[1] << 8 | a[0] << 0;
+        return std::hash<int>{}(h);
+    }
+};
+
+std::array<char, 3> findTransformation(const std::vector<float>& normals, const std::vector<float>& reference_normals) {
+    std::unordered_map<std::array<char, 3>, int> occ;
+
+    for (int i = 0; i < normals.size(); i = i + 3) {
+        std::array<char, 3> transform;
+
+        for (int j = 0; j < 3; ++j) {
+            if (i + j == 6510)
+                int sdf = 23;
+            auto v = reference_normals[i + j];
+            auto it = std::min_element(
+                &normals[i],
+                &normals[i] + 3,
+                [v](const float f0, const float f1) {return std::fabs(std::fabs(f0) - std::fabs(v)) < std::fabs(std::fabs(f1) - std::fabs(v)); }
+            );
+            auto offset = std::distance(&normals[i], it);
+            transform[j] = (signbit(v) == signbit(normals[i + j])) ? (offset + 1) : -(offset + 1);
+        }
+
+        if (occ.find(transform) != occ.end()) {
+            occ[transform] += 1;
+        }
+        else {
+            occ[transform] = 1;
+        }
+
+        
+    }
+
+    auto it = std::max_element(occ.begin(), occ.end(), 
+        [](const std::pair<std::array<char, 3>, int>& it0,
+            const std::pair<std::array<char, 3>, int>& it1) { return it0.second < it1.second; }
+        );
+
+    return it->first;
+}
+
+//This functions will attempt to rotate and reflect the normal vectors into the orientation that matches the mesh.
+void reorientNormals(const std::vector<unsigned short>& index_buffer, const std::vector<float>& vertex_buffer, std::vector<float>& normals) {
+    auto reference_normals = calculateNormals(index_buffer, vertex_buffer);
+
+    auto trans = findTransformation(normals, reference_normals);
+
+    for (int i = 0; i < normals.size() / 3; ++i) {
+        std::vector<float> new_normal(3, 0);
+        for (int j = 0; j < 3; ++j) {
+            new_normal[j] = normals[3 * i + std::abs(trans[j]) - 1];
+            if (std::signbit((float)trans[j]))
+                new_normal[j] *= -1.0;
+        }
+
+        for (int j = 0; j < 3; ++j)
+            normals[3 * i + j] = new_normal[j];
+    }
+
+
+}
+
+
+
 
 void GltfImportWidget::doImport() {
     auto repo = ResourceRepository::instance();
@@ -365,6 +482,7 @@ void GltfImportWidget::doImport() {
         prim->manifest.rig_index = -1;
     prim->manifest.properties = originalPrim->manifest.properties;
 
+    int prim_idx = 0;
     for (auto& primitive : prim->primitives) {
         if (options->useMaxLODRange())
             primitive->remnant.lod_mask = 0xFF;
@@ -392,6 +510,10 @@ void GltfImportWidget::doImport() {
             normals[i + 1] = -z;
             normals[i + 2] = y;
         }
+
+        if(options->autoOrientNormals())
+            reorientNormals(primitive->getIndexBuffer(), primitive->getVertexBuffer(), normals);
+
         primitive->setNormals(normals);
     }
 
