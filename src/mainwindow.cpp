@@ -32,8 +32,8 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
 
     tabs->addTab(exportWidget, "Prim Export" );
     tabs->addTab(importWidget, "Prim Import" );
-    tabs->addTab(new QWidget(this), "Texture Tool" );
-    tabs->addTab(new QWidget(this), "Patch Tool" );
+    //tabs->addTab(new QWidget(this), "Texture Tool" );
+    //tabs->addTab(new QWidget(this), "Patch Tool" );
 
     console = new ConsoleWidget(this);
     Console::instance().setDestinationWidget(console);
