@@ -5,7 +5,7 @@
 
 This tool is in active development and there is currently no comprehensive tutorial but here are a few short pointers to get started:
 ### Export:
-To export a model you need it's runtime id. There is currently no good way to find the runtime id of a model directly. The easiest way to find the runtime id of a specific model is to search [this list](https://gist.github.com/pawREP/cd948ee8882f3e1d218a481f0167fd8f) which contains material names and all associated PRIM runtime ids.
+To export a model you need it's runtime id. There is currently no good way to find the runtime id of a model directly. The easiest way to find the runtime id of a specific model is to search [this list](https://gist.github.com/pawREP/cd948ee8882f3e1d218a481f0167fd8f) which contains material names and all associated PRIM runtime ids. If you are looking for hero disguises specifically, check out [HMBM47's](https://github.com/HMBM47) excellent [list of disguises](https://gist.github.com/pawREP/50dc81c2dd09493f48ba60e37a00819a).
 Once you found the id of the model you want to export, type it into the prim id field, select an export directory and click export. 
 ### Import:
 A few tips and pointers about importing meshes:
