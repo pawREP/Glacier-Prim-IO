@@ -221,7 +221,6 @@ void GltfImportWidget::gltfPathUpdated() {
 }
 
 void GltfImportWidget::importGltf() {
-    doImport();
     emit importStarted();
     auto future = QtConcurrent::run(this, &GltfImportWidget::doImport);
     while (!future.isFinished()) {
@@ -231,41 +230,37 @@ void GltfImportWidget::importGltf() {
     emit importFinished();
 }
 
-std::vector<uint64_t> getDeepTEXDReferenceIds(uint64_t prim_id) {
-    auto repo = ResourceRepository::instance();
+std::vector<RuntimeId> getDeepTEXDReferences(uint64_t prim_id) {
+    const auto repo = ResourceRepository::instance();
 
-    std::vector<uint64_t> texd_ids;
-
-    auto matis = repo->getResourceReferences(prim_id, "MATI");
+    std::vector<RuntimeId> texd_ids;
+    const auto matis = repo->getResourceReferences(prim_id, "MATI");
     for (const auto& mati : matis) {
-        auto texts = repo->getResourceReferences(mati.id, "TEXT");
+        const auto texts = repo->getResourceReferences(mati.id, "TEXT");
         for (const auto& text : texts) {
             auto texds = repo->getResourceReferences(text.id, "TEXD");
-            for (const auto& texd : texds)
+            for (const auto& texd : texds) {
                 texd_ids.push_back(texd.id);
+            }
         }
     }
 
     return texd_ids;
 }
 
-std::vector<std::unique_ptr<TEXD>> importTextures(uint64_t prim_id, const std::filesystem::path& texture_folder) {
+std::vector<std::unique_ptr<Texture>> importTextures(uint64_t prim_id, const std::filesystem::path& texture_folder) {
     auto repo = ResourceRepository::instance();
 
-    std::vector<std::unique_ptr<TEXD>> textures;
+    std::vector<std::unique_ptr<Texture>> textures;
 
-    auto texd_ids = getDeepTEXDReferenceIds(prim_id);
+    auto texd_ids = getDeepTEXDReferences(prim_id);
     for (const auto& texd_id : texd_ids) {
-        std::filesystem::path texture_path = texture_folder / (static_cast<std::string>(RuntimeId(texd_id)) + ".tga");
-        if (texture_path.empty() ||
-            !std::filesystem::exists(texture_path) ||
-            !std::filesystem::is_regular_file(texture_path)
-            )
+        std::filesystem::path texture_path = texture_folder / (static_cast<std::string>(RuntimeId(texd_id)) + ".tga");//TODO: Hard coded extension :/
+        if (texture_path.empty() || !std::filesystem::exists(texture_path) || !std::filesystem::is_regular_file(texture_path))
             continue;
 
         try {
-            textures.push_back(std::move(TEXD::loadFromTGAFile(texture_path)));
-            textures.back()->id = RuntimeId(texture_path.stem().generic_string());
+            textures.push_back(std::move(Texture::loadFromTGAFile(texture_path)));
         }
         catch (const std::exception& e) {
             printError(std::string("TGA Texture load failed: ") + e.what());
@@ -326,8 +321,6 @@ std::array<char, 3> findTransformation(const std::vector<float>& normals, const 
         std::array<char, 3> transform;
 
         for (int j = 0; j < 3; ++j) {
-            if (i + j == 6510)
-                int sdf = 23;
             auto v = reference_normals[i + j];
             auto it = std::min_element(
                 &normals[i],
@@ -338,14 +331,10 @@ std::array<char, 3> findTransformation(const std::vector<float>& normals, const 
             transform[j] = (signbit(v) == signbit(normals[i + j])) ? (offset + 1) : -(offset + 1);
         }
 
-        if (occ.find(transform) != occ.end()) {
-            occ[transform] += 1;
-        }
-        else {
-            occ[transform] = 1;
-        }
-
-        
+        if (occ.find(transform) == occ.end())
+            occ[transform] = 0;
+        occ[transform]++;
+       
     }
 
     auto it = std::max_element(occ.begin(), occ.end(), 
@@ -528,8 +517,18 @@ void GltfImportWidget::doImport() {
     if (options->importTextures()) {
         auto textures = importTextures(prim_id, gltfFilePath.parent_path());
         for (const auto& texture : textures) {
-            auto texd_data = texture->serializeToBuffer();
-            rpkg.insertFile(texture->id, "TEXD", texd_data);
+            if (!texture)
+                continue;
+
+            if (texture->texd) {
+                auto texd_data = texture->texd->serializeToBuffer();
+                rpkg.insertFile(texture->texd->id, "TEXD", texd_data);
+            }
+
+            if (texture->text) {
+                auto text_data = texture->text->serializeToBuffer();
+                rpkg.insertFile(texture->text->id, "TEXT", text_data);
+            }
         }
     }
 
