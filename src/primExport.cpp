@@ -67,6 +67,7 @@ void PrimExportWidget::doExport() {
     try {
         printStatus("Generating GlacierRenderAsset...");
         GlacierRenderAsset model(id);
+        model.sortMeshes();
 
         printStatus("Exporting Geometry...");
         Export::GLTFExporter{}(model, export_dir.generic_string());
