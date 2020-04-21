@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
     console = new ConsoleWidget(this);
     console->setMaximumHeight(250);
     Console::instance().setDestinationWidget(console);
-    printStatus("Glacier PRIM I/O v1.00 by B3\n");
+    printStatus("Glacier PRIM I/O v1.04 by B3\n");
     layout->addWidget(console, 2, 0, 1, 3);
 
     auto footer = new FooterWidget(this);
