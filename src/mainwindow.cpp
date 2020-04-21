@@ -2,6 +2,8 @@
 #include "GlacierFormats.h"
 #include "ui_mainwindow.h"
 #include "Console.h"
+#include "textureImport.h"
+#include "materialEditorWidget.h"
 
 #include <regex>
 #include <Windows.h>
@@ -32,10 +34,12 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
 
     tabs->addTab(exportWidget, "Prim Export" );
     tabs->addTab(importWidget, "Prim Import" );
-    //tabs->addTab(new QWidget(this), "Texture Tool" );
+    tabs->addTab(new materialEditorWidget(this), "Material Editor");
+    //tabs->addTab(new TextureToolWidget(this), "Texture Tool" );
     //tabs->addTab(new QWidget(this), "Patch Tool" );
 
     console = new ConsoleWidget(this);
+    console->setMaximumHeight(250);
     Console::instance().setDestinationWidget(console);
     printStatus("Glacier PRIM I/O v1.00 by B3\n");
     layout->addWidget(console, 2, 0, 1, 3);

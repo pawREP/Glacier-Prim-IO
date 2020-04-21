@@ -27,6 +27,8 @@ set(SOURCES
    src/primExport.cpp
    src/primImport.h
    src/primImport.cpp
+   src/materialEditorWidget.h
+   src/materialEditorWidget.cpp
    src/primIdBrowserWidget.h
    src/primIdBrowserWidget.cpp
    src/mainwindow.ui
