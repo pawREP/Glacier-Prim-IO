@@ -23,4 +23,4 @@ More complicated models may contain a number of additional textures.
 # Troubleshooting:
  - If the lighting of imported models is messed up you can try to play around with the `Invert Normals` options. If this doesn't fix it you have to change the orientation of the coordinates of your model in the editor. Try to match the transformation of the original model.
  - If you get any other unspecified error during import, delete all user generated rpkg patch files from the Runtime directory, restart the I/O tool and try again. 
- - If you have any other specific issues or questions, you can reach me on the [Hitman Modding discord](https://discord.gg/hxPT9rf)
+ - If you have any other specific issues or questions, you can reach me on the [Hitman Modding discord](https://discord.gg/6UDtuYhZP6)
